@@ -16,7 +16,7 @@ This is a separate test page and Apps Script receiver for customer delivery phot
 2. Paste `DeliveryPicsReceiver.gs` into the new project and save it.
 3. Run `setupDeliveryPhotoLogging()` once from the Apps Script editor and authorize Google Sheets and Drive access. It initializes the blank `Sheet1` header row. The deploying account must have Editor access to the spreadsheet and access to the `GMB Delivery Pics` Drive folder.
 4. Deploy it as a web app, executing as the authorized account. To receive uploads from a static GitHub Pages page, the web app must be accessible to anyone with the link. Anyone who obtains the endpoint could submit files, so treat the link as an upload credential; staff ID/name is attribution, not secure sign-in.
-5. Copy the deployed `/exec` URL. Replace `PASTE_YOUR_NEW_APPS_SCRIPT_WEB_APP_EXEC_URL_HERE` with that URL in `index.template.html`, then regenerate `index.html` with the command below.
+5. The current `/exec` URL is configured in `index.template.html`. If you redeploy Apps Script and receive a different URL, replace it there and regenerate `index.html` with the command below.
 6. Publish this folder using the existing GitHub Pages setup. Its URL will be `https://ampcars24-cmyk.github.io/GMB_QR/GMB%20Delivery%20Pics/` if the repo publishes its root as the site.
 
 The `GMB Delivery Pics` Drive root folder was created in the connected Drive. On first upload, the receiver creates the relevant hub folder directly under it. Files remain private unless the Drive owner changes sharing. Browser location is requested only after staff presses the location button; permission cannot be silently granted or permanently forced by a website.
