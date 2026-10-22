@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#3036f5">
+  <title>CARS24 | Delivery Photos</title>
+  <style>
+    :root{font-family:Arial, sans-serif;color:#152238;background:#f4f6ff;--blue:#3036f5;--line:#dce3ef;--muted:#64748b}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#eef0ff,#f8fbff 58%,#eaf6ff);min-height:100vh}
+    main{max-width:650px;margin:auto;padding:18px 14px 42px}.card{background:#fff;border:1px solid #e3e8f4;border-radius:22px;overflow:hidden;box-shadow:0 16px 48px #1b2b5518}
+    header{background:var(--blue);color:#fff;padding:23px 22px 25px;position:relative;overflow:hidden}header:after{content:"";position:absolute;width:170px;height:170px;border:22px solid #ffffff18;border-radius:50%;right:-56px;top:-78px}
+    .logo-frame{position:relative;z-index:1;width:190px;height:64px;overflow:hidden;border:1px solid #ffffff47;border-radius:14px;background:var(--blue)}.logo{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 51%;transform:scale(1.02)}
+    h1{position:relative;z-index:1;font-size:clamp(27px,7vw,36px);line-height:1.08;margin:22px 0 8px;letter-spacing:-.03em}header p{position:relative;z-index:1;color:#ffffffd9;line-height:1.45;margin:0;max-width:490px}
+    .body{padding:22px}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 22px}.step{text-align:center;padding:11px 6px;border:1px solid var(--line);background:#fbfcff;border-radius:13px}.step b{display:block;font-size:12px}.step span{font-size:11px;color:var(--muted)}.icon{font-size:20px;display:block;margin-bottom:5px}
+    h2{font-size:19px;margin:0 0 7px}.intro{font-size:14px;line-height:1.5;color:var(--muted);margin:0 0 15px}label{display:block;font-size:14px;font-weight:700;margin:17px 0 7px}
+    input,select,button{width:100%;min-height:47px;border-radius:10px;font:inherit}input,select{border:1px solid #cbd5e1;padding:10px 12px;background:#fff;color:#152238}button{border:0;padding:11px 14px;font-weight:700;cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}
+    .primary{background:var(--blue);color:#fff}.secondary{background:#edf0ff;color:#3036d5;margin-top:10px}.location{border:1px solid #c7d5ff;background:#f6f7ff;padding:14px;border-radius:13px;margin-top:14px}.location strong{display:block}.location p{margin:5px 0;color:#526176;font-size:13px;line-height:1.4}.hidden{display:none!important}
+    .filebox{border:1px dashed #a8b4cb;border-radius:12px;padding:15px;background:#fafbff}.filebox input{border:0;padding:0;height:auto;min-height:38px}.hint,.status{color:var(--muted);font-size:12px;line-height:1.45}.status{min-height:20px;margin:12px 0 0;font-size:14px}.previews{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.preview{position:relative;aspect-ratio:1;border-radius:9px;overflow:hidden;background:#edf0f5}.preview img{width:100%;height:100%;object-fit:cover}.preview span{position:absolute;bottom:0;left:0;right:0;background:#101828bd;color:white;font-size:10px;padding:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .progress{height:8px;background:#e7eaf2;border-radius:99px;overflow:hidden;margin-top:12px}.progress div{height:100%;width:0;background:#3036f5;transition:width .2s}.privacy{font-size:12px;color:#6b7280;line-height:1.45;margin:17px 0 0}.error{color:#b42318}.success{color:#067647}
+    @media(max-width:420px){.body{padding:17px}.steps{gap:5px}.step{padding:9px 3px}}
+  </style>
+</head>
+<body>
+<main><section class="card">
+  <header><div class="logo-frame"><img class="logo" src="https://ampcars24-cmyk.github.io/GMB_QR/cars24-logo.jpg" alt="Cars24" fetchpriority="high"></div><h1>Celebrate your new car!</h1><p>Help us capture delivery moments at your Cars24 hub. Select the hub and upload customer photos securely for the team.</p></header>
+  <div class="body">
+    <div class="steps"><div class="step"><span class="icon">📍</span><b>Find hub</b><span>Location or search</span></div><div class="step"><span class="icon">📷</span><b>Add photos</b><span>Choose or take</span></div><div class="step"><span class="icon">☁️</span><b>Upload</b><span>Saved by date</span></div></div>
+    <h2>Delivery photo upload</h2><p class="intro">For Cars24 buy-side (C1) hubs only. Your location can suggest the nearest hub; please confirm the correct branch before uploading.</p>
+    <label for="staff">Staff ID or name <span aria-hidden="true">*</span></label><input id="staff" maxlength="80" autocomplete="name" placeholder="Enter your staff ID or name" required>
+    <button id="locate" class="secondary" type="button">📍 Use my location to find nearest hub</button>
+    <p id="geo-status" class="status" role="status" aria-live="polite"></p>
+    <label for="search">Search buy hub</label><input id="search" type="search" placeholder="Search hub, store code, or city" autocomplete="off">
+    <label for="hub">Select hub <span aria-hidden="true">*</span></label><select id="hub"><option value="">Choose a C1 buy hub</option></select>
+    <div id="selected" class="location hidden"><strong id="hub-title"></strong><p id="hub-address"></p><p id="distance" class="hint"></p></div>
+    <label for="photos">Customer delivery photos <span aria-hidden="true">*</span></label>
+    <div class="filebox"><input id="photos" type="file" accept="image/*" capture="environment" multiple><p class="hint">Choose photos or take them with your phone camera. Up to 10 images, 5 MB each. Only upload photos you are authorized to share.</p></div>
+    <div id="previews" class="previews"></div>
+    <button id="upload" class="primary" type="button" disabled>Upload delivery photos</button>
+    <div id="progress-wrap" class="progress hidden"><div id="progress"></div></div>
+    <p id="upload-status" class="status" role="status" aria-live="polite"></p>
+    <p class="privacy">Photos are saved to the configured Cars24 Drive folder. This page records the staff ID, selected hub, and upload timestamp. Avoid uploading documents, number plates, or anything unrelated to the delivery.</p>
+  </div>
+</section></main>
+<iframe name="uploadTarget" id="uploadTarget" title="Upload response" class="hidden"></iframe>
+<script>
+  const UPLOAD_ENDPOINT = 'PASTE_YOUR_NEW_APPS_SCRIPT_WEB_APP_EXEC_URL_HERE';
+  const HUBS = /*__BUY_HUBS__*/;
+  const MAX_FILES = 10, MAX_FILE_BYTES = 5 * 1024 * 1024;
+  const $ = (id) => document.getElementById(id);
+  const search = $('search'), hubSelect = $('hub'), photoInput = $('photos');
+  let filtered = HUBS.slice(), chosenFiles = [], here = null, nearestId = null, remaining = 0, failed = 0;
+  const safe = (s) => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const distanceKm = (a,b) => { const rad=n=>n*Math.PI/180, dLat=rad(b.lat-a.lat), dLon=rad(b.lng-a.lng), x=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLon/2)**2; return 6371*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)); };
+  function renderOptions(){
+    const q=search.value.trim().toLowerCase(); filtered=HUBS.filter(h=>`${h.storeCode} ${h.name} ${h.address} ${h.city} ${h.state}`.toLowerCase().includes(q));
+    if(here) filtered.sort((a,b)=>distanceKm(here,a)-distanceKm(here,b));
+    hubSelect.innerHTML='<option value="">Choose a C1 buy hub</option>'+filtered.map(h=>`<option value="${safe(h.storeCode)}">${safe(h.storeCode)} — ${safe(h.name)}${here?' · '+distanceKm(here,h).toFixed(1)+' km':''}</option>`).join('');
+    if(nearestId && filtered.some(h=>h.storeCode===nearestId)) hubSelect.value=nearestId;
+    showHub();
+  }
+  function showHub(){const h=HUBS.find(x=>x.storeCode===hubSelect.value);$('selected').classList.toggle('hidden',!h);if(h){$('hub-title').textContent=`${h.storeCode} · ${h.name}`;$('hub-address').textContent=h.address||`${h.city}, ${h.state}`;$('distance').textContent=here?`About ${distanceKm(here,h).toFixed(1)} km from detected location. Please confirm this is the correct hub.`:'';} updateUploadButton();}
+  $('locate').addEventListener('click',()=>{const s=$('geo-status');if(!navigator.geolocation){s.textContent='Location is not available in this browser. Search and select your hub manually.';return;}s.textContent='Finding your nearest buy hub…';navigator.geolocation.getCurrentPosition(pos=>{here={lat:pos.coords.latitude,lng:pos.coords.longitude};nearestId=HUBS.reduce((best,h)=>!best||distanceKm(here,h)<distanceKm(here,best)?h:best,null)?.storeCode||null;renderOptions();s.textContent=nearestId?'Nearest C1 hub selected. Please verify the branch.':'Could not match a nearby hub; please search manually.';},err=>{s.textContent=err.code===1?'Location permission was not granted. Search and select your hub manually.':'Could not get your location. Search and select your hub manually.';},{enableHighAccuracy:true,timeout:12000,maximumAge:60000});});
+  search.addEventListener('input',()=>{nearestId=null;renderOptions();});hubSelect.addEventListener('change',()=>{nearestId=null;showHub();});
+  function updateUploadButton(){$('upload').disabled=!(UPLOAD_ENDPOINT.startsWith('https://script.google.com/macros/s/')&&$('staff').value.trim()&&hubSelect.value&&chosenFiles.length);}
+  $('staff').addEventListener('input',updateUploadButton);
+  photoInput.addEventListener('change',()=>{chosenFiles=Array.from(photoInput.files||[]);const status=$('upload-status');if(chosenFiles.length>MAX_FILES){chosenFiles=[];photoInput.value='';status.textContent=`Please choose no more than ${MAX_FILES} images.`;status.className='status error';}else if(chosenFiles.some(f=>!f.type.startsWith('image/')||f.size>MAX_FILE_BYTES)){chosenFiles=[];photoInput.value='';status.textContent='Choose image files only; each photo must be 5 MB or smaller.';status.className='status error';}else{status.textContent=chosenFiles.length?`${chosenFiles.length} photo${chosenFiles.length===1?'':'s'} ready.`:'';status.className='status';}renderPreviews();updateUploadButton();});
+  function renderPreviews(){$('previews').innerHTML='';chosenFiles.forEach(f=>{const u=URL.createObjectURL(f),d=document.createElement('div');d.className='preview';d.innerHTML=`<img src="${u}" alt="Photo preview"><span>${safe(f.name)}</span>`;$('previews').appendChild(d);});}
+  function sendOne(file){return new Promise(resolve=>{const reader=new FileReader();reader.onerror=()=>resolve({ok:false,message:'The photo could not be read by this browser.'});reader.onload=()=>{const requestId=crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2)}`;const form=document.createElement('form');form.method='POST';form.action=UPLOAD_ENDPOINT;form.target='uploadTarget';form.enctype='application/x-www-form-urlencoded';form.className='hidden';const payload={service:'cars24-delivery-pics',eventType:'delivery_photo_upload',requestId,uploadedAt:new Date().toISOString(),staffId:$('staff').value.trim(),intent:'buy',storeCode:hubSelect.value,code:'C1',hubName:HUBS.find(h=>h.storeCode===hubSelect.value)?.name||'',address:HUBS.find(h=>h.storeCode===hubSelect.value)?.address||'',city:HUBS.find(h=>h.storeCode===hubSelect.value)?.city||'',state:HUBS.find(h=>h.storeCode===hubSelect.value)?.state||'',hubLatitude:HUBS.find(h=>h.storeCode===hubSelect.value)?.lat,hubLongitude:HUBS.find(h=>h.storeCode===hubSelect.value)?.lng,mimeType:file.type,fileName:file.name,imageBase64:String(reader.result).split(',')[1]};const input=document.createElement('input');input.name='payload';input.value=JSON.stringify(payload);form.appendChild(input);document.body.appendChild(form);let done=false;const finish=result=>{if(done)return;done=true;window.removeEventListener('message',onMessage);form.remove();resolve(result);};const onMessage=e=>{if(e.data?.service==='cars24-delivery-pics'&&e.data?.requestId===requestId)finish(e.data);};window.addEventListener('message',onMessage);setTimeout(()=>finish({ok:false,message:'No confirmation came back from the upload service. Check the Apps Script deployment and try again.'}),90000);form.submit();};reader.readAsDataURL(file);});}
+  $('upload').addEventListener('click',async()=>{if(!chosenFiles.length)return;const btn=$('upload'),status=$('upload-status'),total=chosenFiles.length;btn.disabled=true;btn.textContent='Uploading…';$('progress-wrap').classList.remove('hidden');remaining=total;failed=0;let saved=0,lastConfirmation='',lastError='';for(let i=0;i<total;i++){status.textContent=`Uploading photo ${i+1} of ${total}…`;const result=await sendOne(chosenFiles[i]);if(result?.ok){saved++;lastConfirmation=result.message||'Photo saved to Drive and recorded in the tracking sheet.';}else{failed++;lastError=result?.message||result?.error||'Upload failed.';}remaining--; $('progress').style.width=`${Math.round((i+1)/total*100)}%`;}
+    status.textContent=failed?`${saved} of ${total} photos confirmed; ${failed} failed. ${lastError} Select the failed photos again to retry.`:`✅ ${lastConfirmation} ${total>1?`(${saved} photos)`:''}`;status.className=`status ${failed?'error':'success'}`;btn.textContent='Upload delivery photos';chosenFiles=[];photoInput.value='';renderPreviews();updateUploadButton();});
+  window.addEventListener('message',e=>{if(e.data?.service==='cars24-delivery-pics'&&e.data?.requestId){/* handled by the active upload request */}});
+  renderOptions();
+</script>
+</body></html>
