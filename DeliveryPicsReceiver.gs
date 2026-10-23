@@ -32,7 +32,9 @@ function doPost(e) {
   try {
     console.log('C24 delivery upload: received; contentLength=' + String(e && e.contentLength || 'unknown') +
       '; postType=' + String(e && e.postData && e.postData.type || 'unknown'));
-    payload = JSON.parse((e && e.parameter && e.parameter.payload) || '{}');
+    var rawPayload = (e && e.parameter && e.parameter.payload) || '';
+    if (!rawPayload && e && e.postData && e.postData.contents) rawPayload = e.postData.contents;
+    payload = JSON.parse(rawPayload || '{}');
     console.log('C24 delivery upload: payload parsed; requestId=' + String(payload.requestId || 'missing') +
       '; mimeType=' + String(payload.mimeType || 'missing') +
       '; encodedChars=' + String(String(payload.imageBase64 || '').length));
