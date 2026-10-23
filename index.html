@@ -67,20 +67,7 @@
   photoInput.addEventListener('change',()=>{chosenFiles=Array.from(photoInput.files||[]);const status=$('upload-status');if(chosenFiles.length>MAX_FILES){chosenFiles=[];photoInput.value='';status.textContent=`Please choose no more than ${MAX_FILES} images.`;status.className='status error';}else if(chosenFiles.some(f=>!f.type.startsWith('image/')||f.size>MAX_FILE_BYTES)){chosenFiles=[];photoInput.value='';status.textContent='Choose image files only; each photo must be 5 MB or smaller.';status.className='status error';}else{status.textContent=chosenFiles.length?`${chosenFiles.length} photo${chosenFiles.length===1?'':'s'} ready.`:'';status.className='status';}renderPreviews();updateUploadButton();});
   function renderPreviews(){$('previews').innerHTML='';chosenFiles.forEach(f=>{const u=URL.createObjectURL(f),d=document.createElement('div');d.className='preview';d.innerHTML=`<img src="${u}" alt="Photo preview"><span>${safe(f.name)}</span>`;$('previews').appendChild(d);});}
   function readBlobAsDataURL(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=()=>reject(new Error('Could not read image'));reader.onload=()=>resolve(String(reader.result));reader.readAsDataURL(blob);});}
-  async function preparePhoto(file){
-    try{
-      if(!('createImageBitmap' in window)) return {blob:file,name:file.name,type:file.type||'image/jpeg'};
-      const bitmap=await createImageBitmap(file);
-      const maxSide=1280, scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));
-      if(scale===1 && file.size<850*1024){bitmap.close?.();return {blob:file,name:file.name,type:file.type||'image/jpeg'};}
-      const canvas=document.createElement('canvas');
-      canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
-      const ctx=canvas.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close?.();
-      const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.72));
-      if(blob && blob.size<file.size) return {blob,name:file.name.replace(/\\.[^.]+$/,'')+'.jpg',type:'image/jpeg'};
-      return {blob:file,name:file.name,type:file.type||'image/jpeg'};
-    }catch(_){return {blob:file,name:file.name,type:file.type||'image/jpeg'};}
-  }
+  function preparePhoto(file){return Promise.resolve({blob:file,name:file.name,type:file.type||'image/jpeg'});}
   function sendOne(file){return new Promise(resolve=>{
     let preparedData='';
     let done=false, frameLoadedTimer=null, timeoutTimer=null;
