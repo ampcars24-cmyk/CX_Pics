@@ -2,7 +2,7 @@ var DELIVERY_ROOT_FOLDER_ID = '1HCsD3malMvrlAydBit6wed0E2JziVRSW';
 var DELIVERY_SPREADSHEET_ID = '1qzcnqszrm_R00Sn-Gd7GYqF38pfg8ATWIM9WpMai0Q8';
 var DELIVERY_SHEET_NAME = 'Sheet1';
 var DELIVERY_TIME_ZONE = 'Asia/Kolkata';
-var DELIVERY_MAX_BYTES = 10 * 1024 * 1024;
+var DELIVERY_MAX_BYTES = 25 * 1024 * 1024;
 var DELIVERY_HEADERS = [
   'Uploaded At (IST)', 'Upload ID', 'Staff ID / Name', 'Store Code', 'Hub Name',
   'City', 'State', 'Photo File Name', 'Drive File URL', 'Photo Type', 'Photo Size (MB)'
@@ -158,11 +158,11 @@ function validateAndDecode_(p) {
   }
   var encoded = String(p.imageBase64 || '');
   if (!encoded || encoded.length > Math.ceil(DELIVERY_MAX_BYTES * 4 / 3) + 8) {
-    throw new Error('Photo is empty or exceeds the 10 MB limit.');
+    throw new Error('Photo is empty or exceeds the 25 MB limit.');
   }
   var bytes = Utilities.base64Decode(encoded);
   if (!bytes.length || bytes.length > DELIVERY_MAX_BYTES) {
-    throw new Error('Photo is empty or exceeds the 10 MB limit.');
+    throw new Error('Photo is empty or exceeds the 25 MB limit.');
   }
 
   var sig = bytes.slice(0, 12).map(function (b) { return (b + 256) % 256; });
