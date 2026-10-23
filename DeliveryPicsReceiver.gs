@@ -251,7 +251,7 @@ function response_(data) {
 function uploadStatusResponse_(e) {
   var requestId = String(e.parameter.requestId || '');
   var callback = String(e.parameter.callback || '');
-  if (!/^[\\w-]{8,80}$/.test(requestId) || !/^[A-Za-z_$][A-Za-z0-9_$]{0,80}$/.test(callback)) {
+  if (!/^[A-Za-z0-9_-]{8,80}$/.test(requestId) || !/^[A-Za-z_$][A-Za-z0-9_$]{0,80}$/.test(callback)) {
     return ContentService.createTextOutput('void 0;').setMimeType(ContentService.MimeType.JAVASCRIPT);
   }
   var result = null;
