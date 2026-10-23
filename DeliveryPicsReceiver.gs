@@ -40,7 +40,9 @@ function doPost(e) {
     var rootFolder = DriveApp.getFolderById(DELIVERY_ROOT_FOLDER_ID);
     var hubFolder = getOrCreateFolder_(rootFolder, folderName);
     var extension = image.mimeType === 'image/png' ? '.png' :
-      image.mimeType === 'image/webp' ? '.webp' : '.jpg';
+      image.mimeType === 'image/webp' ? '.webp' :
+      image.mimeType === 'image/heic' ? '.heic' :
+      image.mimeType === 'image/heif' ? '.heif' : '.jpg';
     var fileName = safeName_(payload.hubName) + '_' + day + '_' + time +
       '_' + Utilities.getUuid().split('-')[0] + extension;
 
@@ -153,8 +155,8 @@ function validateAndDecode_(p) {
   }
 
   var mime = String(p.mimeType || '').toLowerCase();
-  if (['image/jpeg', 'image/png', 'image/webp'].indexOf(mime) < 0) {
-    throw new Error('Use a JPG, PNG, or WebP image.');
+  if (['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'].indexOf(mime) < 0) {
+    throw new Error('Use a JPG, PNG, WebP, HEIC, or HEIF image.');
   }
   var encoded = String(p.imageBase64 || '');
   if (!encoded || encoded.length > Math.ceil(DELIVERY_MAX_BYTES * 4 / 3) + 8) {
@@ -170,7 +172,12 @@ function validateAndDecode_(p) {
   var isPng = sig[0] === 0x89 && sig[1] === 0x50 && sig[2] === 0x4e && sig[3] === 0x47;
   var isWebp = sig[0] === 0x52 && sig[1] === 0x49 && sig[2] === 0x46 && sig[3] === 0x46 &&
     sig[8] === 0x57 && sig[9] === 0x45 && sig[10] === 0x42 && sig[11] === 0x50;
-  if (!(mime === 'image/jpeg' && isJpeg || mime === 'image/png' && isPng || mime === 'image/webp' && isWebp)) {
+  var isIsoBmff = sig[4] === 0x66 && sig[5] === 0x74 && sig[6] === 0x79 && sig[7] === 0x70;
+  var heifBrand = String.fromCharCode(sig[8], sig[9], sig[10], sig[11]);
+  var isHeif = isIsoBmff && ['heic', 'heix', 'hevc', 'hevx', 'mif1', 'msf1'].indexOf(heifBrand) >= 0;
+  if (!(mime === 'image/jpeg' && isJpeg || mime === 'image/png' && isPng ||
+        mime === 'image/webp' && isWebp ||
+        (mime === 'image/heic' || mime === 'image/heif') && isHeif)) {
     throw new Error('The selected file does not match its image type.');
   }
   return { bytes: bytes, mimeType: mime };
