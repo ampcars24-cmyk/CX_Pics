@@ -69,30 +69,40 @@
   function readBlobAsDataURL(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=()=>reject(new Error('Could not read image'));reader.onload=()=>resolve(String(reader.result));reader.readAsDataURL(blob);});}
   function preparePhoto(file){return Promise.resolve({blob:file,name:file.name,type:file.type||'image/jpeg'});}
   function sendOne(file){return new Promise(resolve=>{
-    let preparedData='';
-    let done=false, frameLoadedTimer=null, timeoutTimer=null;
-    const form=document.createElement('form');
-    const target=$('uploadTarget');
+    let done=false,timeoutTimer=null,statusAttempt=0;
+    const form=document.createElement('form'),target=$('uploadTarget'),statusCleanups=[];
     const requestId=crypto.randomUUID?crypto.randomUUID():String(Date.now())+'-'+Math.random().toString(36).slice(2);
-    const finish=result=>{if(done)return;done=true;clearTimeout(frameLoadedTimer);clearTimeout(timeoutTimer);window.removeEventListener('message',onMessage);target.removeEventListener('load',onFrameLoad);form.remove();resolve(result);};
+    const finish=result=>{
+      if(done)return;done=true;clearTimeout(timeoutTimer);window.removeEventListener('message',onMessage);
+      target.removeEventListener('load',onFrameLoad);statusCleanups.forEach(fn=>fn());form.remove();resolve(result);
+    };
     const onMessage=e=>{if(e.data?.service==='cars24-delivery-pics'&&e.data?.requestId===requestId)finish(e.data);};
-    const onFrameLoad=()=>{clearTimeout(frameLoadedTimer);frameLoadedTimer=setTimeout(()=>finish({ok:null,unconfirmed:true,message:'The upload request finished, but the server confirmation could not be verified. Check Drive and the tracking sheet before retrying.'}),1200);};
+    const checkStatus=()=>{
+      if(done)return;
+      const cb='c24dp_status_'+requestId.replace(/[^A-Za-z0-9_$]/g,'_')+'_'+statusAttempt;
+      const script=document.createElement('script');let settled=false,timer=null;
+      const cleanup=()=>{if(settled)return;settled=true;clearTimeout(timer);try{delete window[cb];}catch(_){window[cb]=undefined;}script.remove();};
+      statusCleanups.push(cleanup);
+      const retry=()=>{cleanup();if(done)return;statusAttempt++;if(statusAttempt<5)setTimeout(checkStatus,500);else finish({ok:null,unconfirmed:true,message:'The upload request finished, but the server confirmation could not be verified. Check Drive and the tracking sheet before retrying.'});};
+      window[cb]=data=>{cleanup();if(done)return;if(data?.requestId===requestId&&!data.pending){finish(data);return;}retry();};
+      script.onerror=retry;
+      script.src=UPLOAD_ENDPOINT+'?action=uploadStatus&requestId='+encodeURIComponent(requestId)+'&callback='+encodeURIComponent(cb)+'&t='+Date.now();
+      timer=setTimeout(retry,5000);document.head.appendChild(script);
+    };
+    const onFrameLoad=()=>{target.removeEventListener('load',onFrameLoad);checkStatus();};
     (async()=>{
       try{
-        const prepared=await preparePhoto(file);
-        preparedData=await readBlobAsDataURL(prepared.blob);
+        const prepared=await preparePhoto(file),dataUrl=await readBlobAsDataURL(prepared.blob);
         const hub=HUBS.find(h=>h.storeCode===hubSelect.value)||{};
-        const payload={service:'cars24-delivery-pics',eventType:'delivery_photo_upload',requestId,uploadedAt:new Date().toISOString(),staffId:$('staff').value.trim(),intent:'buy',storeCode:hubSelect.value,code:'C1',hubName:hub.name||'',address:hub.address||'',city:hub.city||'',state:hub.state||'',hubLatitude:hub.lat,hubLongitude:hub.lng,mimeType:prepared.type,fileName:prepared.name,imageBase64:preparedData.split(',')[1]};
+        const payload={service:'cars24-delivery-pics',eventType:'delivery_photo_upload',requestId,uploadedAt:new Date().toISOString(),staffId:$('staff').value.trim(),intent:'buy',storeCode:hubSelect.value,code:'C1',hubName:hub.name||'',address:hub.address||'',city:hub.city||'',state:hub.state||'',hubLatitude:hub.lat,hubLongitude:hub.lng,mimeType:prepared.type,fileName:prepared.name,imageBase64:dataUrl.split(',')[1]};
         const input=document.createElement('input');input.name='payload';input.value=JSON.stringify(payload);
         form.method='POST';form.action=UPLOAD_ENDPOINT;form.target='uploadTarget';form.enctype='application/x-www-form-urlencoded';form.className='hidden';form.appendChild(input);document.body.appendChild(form);
-        window.addEventListener('message',onMessage);
-        target.addEventListener('load',onFrameLoad);
-        timeoutTimer=setTimeout(()=>finish({ok:null,unconfirmed:true,message:'The upload is taking longer than expected and is not yet confirmed. Check Drive and the tracking sheet before retrying.'}),45000);
+        window.addEventListener('message',onMessage);target.addEventListener('load',onFrameLoad);
+        timeoutTimer=setTimeout(()=>finish({ok:null,unconfirmed:true,message:'The upload is taking longer than expected and is not yet confirmed. Check Drive and the tracking sheet before retrying.'}),90000);
         form.submit();
       }catch(err){finish({ok:false,message:err?.message||'The photo could not be prepared for upload.'});}
     })();
   });}
-
   $('upload').addEventListener('click',async()=>{if(!chosenFiles.length)return;const btn=$('upload'),status=$('upload-status'),total=chosenFiles.length;btn.disabled=true;btn.textContent='Uploading…';$('progress-wrap').classList.remove('hidden');let saved=0,failed=0,unconfirmed=0,lastConfirmation='',lastError='';uploadUnconfirmed=false;for(let i=0;i<total;i++){status.textContent='Preparing and uploading photo '+(i+1)+' of '+total+'…';const result=await sendOne(chosenFiles[i]);if(result?.ok===true){saved++;lastConfirmation=result.message||'Photo saved to Drive and recorded in the tracking sheet.';}else if(result?.unconfirmed){unconfirmed++;lastError=result.message||'Confirmation is pending.';}else{failed++;lastError=result?.message||result?.error||'Upload failed.';}$('progress').style.width=Math.round((i+1)/total*100)+'%';}
     if(unconfirmed){uploadUnconfirmed=true;status.textContent=saved+' of '+total+' photos confirmed; '+unconfirmed+' confirmation'+(unconfirmed===1?' is':'s are')+' pending. '+lastError+' Do not retry until you check Drive and the tracking sheet.';status.className='status';}
     else if(failed){status.textContent=saved+' of '+total+' photos confirmed; '+failed+' failed. '+lastError+' You can select failed photos again to retry.';status.className='status error';}

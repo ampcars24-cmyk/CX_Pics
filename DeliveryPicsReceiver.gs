@@ -8,7 +8,8 @@ var DELIVERY_HEADERS = [
   'City', 'State', 'Photo File Name', 'Drive File URL', 'Photo Type', 'Photo Size (MB)'
 ];
 
-function doGet() {
+function doGet(e) {
+  if (e && e.parameter && e.parameter.action === 'uploadStatus') return uploadStatusResponse_(e);
   return HtmlService.createHtmlOutput(
     'Cars24 delivery photo receiver is ready. Run setupDeliveryPhotoLogging() once before accepting uploads.'
   );
@@ -211,12 +212,50 @@ function safeName_(value) {
 
 function response_(data) {
   data.service = 'cars24-delivery-pics';
+  if (data.requestId) {
+    try {
+      CacheService.getScriptCache().put('delivery-upload:' + data.requestId, JSON.stringify(data), 21600);
+    } catch (cacheError) {}
+  }
   var json = JSON.stringify(data).replace(/</g, '\\u003c');
   var html = '<!doctype html><html><head><meta charset="utf-8"></head><body>' +
     '<script>(function(){var result=' + json + ';' +
     'try{window.top.postMessage(result,"*");}' +
     'catch(e){try{window.parent.postMessage(result,"*");}catch(ignored){}}' +
     '})();</script></body></html>';
-  return HtmlService.createHtmlOutput(html)
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  return HtmlService.createHtmlOutput(html).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function uploadStatusResponse_(e) {
+  var requestId = String(e.parameter.requestId || '');
+  var callback = String(e.parameter.callback || '');
+  if (!/^[\\w-]{8,80}$/.test(requestId) || !/^[A-Za-z_$][A-Za-z0-9_$]{0,80}$/.test(callback)) {
+    return ContentService.createTextOutput('void 0;').setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  var result = null;
+  try {
+    var cached = CacheService.getScriptCache().get('delivery-upload:' + requestId);
+    if (cached) result = JSON.parse(cached);
+  } catch (cacheReadError) {}
+  if (!result) result = findUploadStatusInSheet_(requestId);
+  if (!result) result = {service:'cars24-delivery-pics',requestId:requestId,pending:true,ok:null};
+  result.service = 'cars24-delivery-pics';
+  var json = JSON.stringify(result).replace(/</g, '\\u003c');
+  return ContentService.createTextOutput(callback + '(' + json + ');')
+    .setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
+
+function findUploadStatusInSheet_(requestId) {
+  try {
+    var sheet = getDeliverySheet_(), lastRow = sheet.getLastRow();
+    if (lastRow < 2) return null;
+    var match = sheet.getRange(2,2,lastRow-1,1).createTextFinder(requestId).matchEntireCell(true).findNext();
+    if (!match) return null;
+    var row = sheet.getRange(match.getRow(),1,1,DELIVERY_HEADERS.length).getValues()[0];
+    return {
+      service:'cars24-delivery-pics',requestId:requestId,ok:true,logged:true,
+      fileName:String(row[7]||''),fileUrl:String(row[8]||''),
+      message:'Upload confirmed: the photo was saved in Google Drive and logged in the tracking sheet.'
+    };
+  } catch (lookupError) { return null; }
 }
