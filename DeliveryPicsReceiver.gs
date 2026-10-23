@@ -30,8 +30,15 @@ function doPost(e) {
   var savedFile = null;
 
   try {
+    console.log('C24 delivery upload: received; contentLength=' + String(e && e.contentLength || 'unknown') +
+      '; postType=' + String(e && e.postData && e.postData.type || 'unknown'));
     payload = JSON.parse((e && e.parameter && e.parameter.payload) || '{}');
+    console.log('C24 delivery upload: payload parsed; requestId=' + String(payload.requestId || 'missing') +
+      '; mimeType=' + String(payload.mimeType || 'missing') +
+      '; encodedChars=' + String(String(payload.imageBase64 || '').length));
     var image = validateAndDecode_(payload);
+    console.log('C24 delivery upload: image validated; requestId=' + String(payload.requestId || 'missing') +
+      '; mimeType=' + image.mimeType + '; bytes=' + image.bytes.length);
     var now = new Date();
     var day = Utilities.formatDate(now, DELIVERY_TIME_ZONE, 'yyyy-MM-dd');
     var time = Utilities.formatDate(now, DELIVERY_TIME_ZONE, 'HHmmss');
@@ -49,6 +56,7 @@ function doPost(e) {
     savedFile = hubFolder.createFile(
       Utilities.newBlob(image.bytes, image.mimeType, fileName)
     );
+    console.log('C24 delivery upload: Drive file created; requestId=' + String(payload.requestId || 'missing'));
     savedFile.setDescription(
       'CARS24 buy-side delivery photo. Store: ' + payload.storeCode +
       '; staff: ' + payload.staffId +
@@ -75,8 +83,11 @@ function doPost(e) {
         Number((image.bytes.length / (1024 * 1024)).toFixed(2))
       ]);
       logged = true;
+      console.log('C24 delivery upload: sheet row appended; requestId=' + String(payload.requestId || 'missing'));
     } catch (sheetError) {
       logError = String(sheetError && sheetError.message || sheetError);
+      console.error('C24 delivery upload: sheet logging failed; requestId=' + String(payload.requestId || 'missing') +
+        '; error=' + logError);
     }
 
     if (logged) {
@@ -114,6 +125,8 @@ function doPost(e) {
     });
   } catch (error) {
     var message = String(error && error.message || error);
+    console.error('C24 delivery upload: processing failed; requestId=' + String(payload.requestId || 'missing') +
+      '; error=' + message);
 
     // Never trash a created photo because sheet logging or formatting failed.
     if (savedFile) {
